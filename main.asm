@@ -1,10 +1,6 @@
 bits 16             ; runs in 16 bits real mode
 org 7C00h           ; loaded by INT 19h at address 7C00h
 
-jmp short start     ; jump over the data
-
-msg: db 'Hello World!', 0
-
 start:
     call clear_screen
     mov ax, cs
@@ -26,7 +22,8 @@ next:
     jmp next        ; repeat
 
 done:
-    jmp $           ; infinite loop
+    cli             ; disable external interrupts
+    hlt             ; stop the processor
 
 printchar:
     mov ah, 0Eh     ; teletype mode
@@ -47,9 +44,11 @@ clear_screen:
     int 10h
     ret
 
+msg: db 'Hello World!', 0
+
 ; $  is the address of current line
 ; $$ is the address of first instruction
-times 510 - ($ - $$) db 0
+times 512 - 2 - ($ - $$) db 0
 
 ; boot signature 0x55 0xAA in little endian
 dw 0AA55h
