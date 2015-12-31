@@ -18,7 +18,13 @@ main:
     mov si, msg_2
     call print
 
+    mov dh, 16
+    mov si, msg_3
+    call print
+
+    call wait_for_enter
     call shutdown
+
     cli             ; disable external interrupts
     hlt             ; stop the processor
 
@@ -47,8 +53,8 @@ init:
     mov ss, ax      ;   stack segment.
     sti             ; then re-enable external interrupts
 
-    mov cl, 0       ; left
-    mov ch, 0       ; top
+    xor cl, cl      ; left
+    xor ch, ch      ; top
     mov dl, 79      ; right
     mov dh, 24      ; bottom
     mov bh, 0E0h    ; colors
@@ -59,6 +65,10 @@ init:
     mov dl, 75      ; right
     mov dh, 22      ; bottom
     mov bh, 0Ch     ; colors
+    call set_color
+
+    mov ch, 15      ; top
+    mov bh, 0Bh     ; colors
     call set_color
 
     ret
@@ -75,6 +85,14 @@ set_position:
 
     mov ah, 02h     ; move cursor
     int 10h
+    ret
+
+wait_for_enter:
+    mov ah, 0       ; get keyboard input
+    int 16h
+
+    cmp al, 0Dh     ; ASCII code of a carriage return
+    jne short wait_for_enter
     ret
 
 shutdown:
@@ -97,6 +115,7 @@ shutdown:
 title:  db 'WARNING', 0
 msg_1:  db 'This computer has been infected and put into quarantine.', 0
 msg_2:  db 'Please contact the administrator at me@arnie97.progr.am.', 0
+msg_3:  db 'Press ENTER to turn off the computer.', 0
 
 ; $  is the address of current line
 ; $$ is the address of first instruction
