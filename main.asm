@@ -9,25 +9,34 @@ main:
     mov si, title   ; loads the pointer to string
     call print
 
-print:
-    call set_position
+    mov dh, 5
+    mov dl, 10
+    mov si, msg_1
+    call print
 
-next:
-    mov al, [si]    ; grab a character
-    cmp al, 0       ; is this the end of the string?
-    je done         ; if so, exit from loop
-    call printchar
-    inc si          ; move to the next position in the string
-    jmp next        ; repeat
+    add dh, 2
+    mov si, msg_2
+    call print
 
-done:
     cli             ; disable external interrupts
     hlt             ; stop the processor
 
-printchar:
+print:
+    call set_position
+
+puts:
+    mov al, [si]    ; grab a character
+    cmp al, 0       ; is this the end of the string?
+    jne short putc
+    ret             ; exit the loop
+
+putc:
     mov ah, 0Eh     ; teletype mode
     int 10h
-    ret
+
+next:
+    inc si          ; move to the next position in the string
+    jmp short puts  ; repeat
 
 init:
     cli             ; clear and disable interrupts
@@ -68,6 +77,8 @@ set_position:
     ret
 
 title:  db 'WARNING', 0
+msg_1:  db 'This computer has been infected and put into quarantine.', 0
+msg_2:  db 'Please contact the administrator at me@arnie97.progr.am.', 0
 
 ; $  is the address of current line
 ; $$ is the address of first instruction
