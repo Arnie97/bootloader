@@ -18,6 +18,7 @@ main:
     mov si, msg_2
     call print
 
+    call shutdown
     cli             ; disable external interrupts
     hlt             ; stop the processor
 
@@ -75,6 +76,23 @@ set_position:
     mov ah, 02h     ; move cursor
     int 10h
     ret
+
+shutdown:
+    mov ax, 5301h   ; APM real mode interface connect (01h)
+    xor bx, bx      ; APM BIOS (0000h)
+    int 15h
+
+    mov ax, 530Eh   ; APM driver version (0Eh)
+    xor bx, bx      ; APM BIOS (0000h)
+    mov cx, 0102h   ; try to set apm version to 1.2
+    int 15h
+
+    mov ax, 5307h   ; set power state (07h)
+    mov bx, 0001h   ; all devices managed by the APM BIOS
+    mov cx, 0003h   ; power state off
+    int 15h
+
+    ret             ; exit (for good measure and in case of failure)
 
 title:  db 'WARNING', 0
 msg_1:  db 'This computer has been infected and put into quarantine.', 0
