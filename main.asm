@@ -7,11 +7,14 @@ start:
     mov ds, ax
 
     mov si, msg     ; loads the address of first byte of string
+    mov dh, 0       ; top row
+    mov dl, 0       ; left column
     call print
 
 print:
     push ax
     cld
+    call set_position
 
 next:
     mov al, [si]    ; grab a character
@@ -42,6 +45,14 @@ clear_screen:
     mov dh, 24      ; lower row number
 
     int 10h
+    ret
+
+set_position:
+    mov ah, 0Fh     ; get current video mode and video page.
+    int 10h         ; bh will ne the video page currently being displayed
+
+    mov ah, 02h
+    int 10h         ; move
     ret
 
 msg: db 'Hello World!', 0
